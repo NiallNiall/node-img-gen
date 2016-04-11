@@ -77,6 +77,17 @@ function makeSvg(loopCount){
                 return (1-u) * a + u * b;
             };
 
+            function lerpColour(clr1, clr2, clrStage) {
+
+                var newColour = new paper.Color(
+                        lerp(clr1.red, clr2.red, clrStage),
+                        lerp(clr1.green, clr2.green, clrStage),
+                        lerp(clr1.blue, clr2.blue, clrStage)
+                    )
+
+                return newColour;
+            }
+
             function makeSky(){
                 for(var i = 0; i < paper.view.bounds.height; i +=10){
                     var sunsetPath = new paper.Path();
@@ -85,15 +96,44 @@ function makeSvg(loopCount){
 
                     var blendStage = i/paper.view.bounds.height;
 
-                    sunsetPath.strokeColor = new paper.Color(
-                            lerp(topColour.red, newColour.red, blendStage),
-                            lerp(topColour.green, newColour.green, blendStage),
-                            lerp(topColour.blue, newColour.blue, blendStage)
-                        )
+                    sunsetPath.strokeColor = lerpColour(topColour, newColour, blendStage);
 
                     // sunsetPath.strokeColor = skyColour.multiply(newColour.add(i/paper.view.bounds.height));
                     sunsetPath.strokeWidth = 10.0;
                 }
+            }
+
+            function makeTree(treeCenter, treeHeight, treeWidth){
+                var treePath = new paper.Path();
+                treePath.add(new paper.Point(treeCenter.x, treeCenter.y - treeHeight));
+                treePath.add(new paper.Point(treeCenter.x+treeWidth, treeCenter.y));
+                treePath.add(new paper.Point(treeCenter.x-treeWidth, treeCenter.y));
+                // var triangle = new paper.Path.RegularPolygon(treeCenter, 3, 50);
+                treePath.fillColor = '#22bb22';
+            }
+
+            function makeCloudPath(cloudCenter){
+                var cloudWidth = randomIntFromInterval(10, 30);
+                var cloudPath = new paper.Path();
+                cloudPath.add(new paper.Point(cloudCenter.x+cloudWidth, cloudCenter.y));
+                cloudPath.add(new paper.Point(cloudCenter.x-cloudWidth, cloudCenter.y));
+                // var triangle = new paper.Path.RegularPolygon(treeCenter, 3, 50);
+                cloudPath.strokeColor = '#fff';
+                cloudPath.strokeWidth = 10.0;
+                cloudPath.strokeCap = 'round';
+            }
+
+            function makeCloud(cloudCenter){
+                var cloudAmount = randomIntFromInterval(1,5);
+                for(var i = 0; i < cloudAmount; i++){
+                    var cloudVariance = randomIntFromInterval(-25, 25);
+                    makeCloudPath(new paper.Point(cloudCenter.x + cloudVariance, cloudCenter.y-(i*8)));
+                }
+            }
+
+            function makeSun(sunCenter){
+                var sunPath = new paper.Path.Circle(sunCenter, 50);
+                sunPath.fillColor = '#ccaa33';
             }
 
 
@@ -105,6 +145,10 @@ function makeSvg(loopCount){
 
         makeBackground();
         makeSky();
+        makeSun(view.center);
+        // makeTree(view.center, 100, 20);
+        makeCloud(view.center);
+
 
         var numClouds = 10;
 
